@@ -9,7 +9,7 @@ if(!isset($_FILES['excelfile'])) {
 	exit;
 }
 
-$inputFileName = $_FILES['excelfile']['name'];
+$inputFileName = $_FILES['excelfile']['tmp_name'];
 
 /**  Identify the type of $inputFileName  **/
 $inputFileType = PHPExcel_IOFactory::identify($inputFileName);
