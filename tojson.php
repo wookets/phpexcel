@@ -15,8 +15,11 @@ $inputFileName = $_FILES['excelfile']['tmp_name'];
 $inputFileType = PHPExcel_IOFactory::identify($inputFileName);
 /**  Create a new Reader of the type that has been identified  **/
 $objReader = PHPExcel_IOFactory::createReader($inputFileType);
+if($inputFileType == 'CSV' || $inputFileType == 'csv') {
+  ini_set("auto_detect_line_endings", true);
+}
 /**  Advise the Reader that we only want to load cell data  **/
-$objReader->setReadDataOnly(true);
+//$objReader->setReadDataOnly(true); // We can't do this, because we want to read format data...
 /**  Load $inputFileName to a PHPExcel Object  **/
 $objPHPExcel = $objReader->load($inputFileName);
 
@@ -24,7 +27,6 @@ $excelArray = array();
 foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
 	$worksheetArray = array();
 	//array_push($worksheetArray, $worksheet->getTitle());
-	
 	foreach ($worksheet->getRowIterator() as $row) {
 		$rowArray = array();
 		//array_push($excelArray, $row->getRowIndex());
@@ -35,7 +37,24 @@ foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
 			//if (!is_null($cell)) {
 			//	array_push($excelArray, $cell->getCalculatedValue());
 			//}
-			array_push($rowArray, $cell->getCalculatedValue());
+			try {
+			  $dataType = $cell->getDataType();
+			  // convert date...
+			  $isDate = PHPExcel_Shared_Date::isDateTime($cell);
+			  if($isDate) {
+			    $dataType = 'date';
+			    $calculatedValue = PHPExcel_Shared_Date::ExcelToPHPObject($cell->getValue())->format('Y-m-d');
+			  } else {
+  			  $calculatedValue = $cell->getCalculatedValue();
+			  }
+			  if($dataType == 's') $dataType = 'string';
+			  if($dataType == 'n') $dataType = 'number';
+			  $cellObj = array("column" => $cell->getColumn(), "row" => $cell->getRow(), "dataType" => $dataType,
+			                   "value" => $cell->getValue(), "formattedValue" => $cell->getFormattedValue(), "calculatedValue" => $calculatedValue);
+				array_push($rowArray, $cellObj);
+			} catch(Exception $e) {
+				array_push($rowArray, "NA");
+			}
 		}
 		array_push($worksheetArray, $rowArray);
 	}
