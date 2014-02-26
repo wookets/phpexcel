@@ -2,6 +2,8 @@
 
 // Handles uploading and transform to json. 
 
+ini_set("memory_limit", "120M");
+
 require_once './Classes/PHPExcel/IOFactory.php';
 
 if(!isset($_FILES['excelfile'])) {
