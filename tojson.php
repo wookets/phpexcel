@@ -2,7 +2,7 @@
 
 // Handles uploading and transform to json. 
 
-ini_set("memory_limit", "120M");
+ini_set("memory_limit", "256M");
 
 require_once './Classes/PHPExcel/IOFactory.php';
 
